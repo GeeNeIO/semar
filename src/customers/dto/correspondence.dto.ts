@@ -7,7 +7,7 @@ export class CorrespondentCreateDTO {
 
 export class CorrespondentUpdateDTO {
   readonly title?: string;
-  readonly phonNumber?: string;
+  readonly phoneNumber?: string;
   readonly address?: string;
   readonly notes?: string;
 }

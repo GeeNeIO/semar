@@ -1,14 +1,21 @@
-import { Model, Table, PrimaryKey, Column, DataType } from "sequelize-typescript";
+import { Model, Table, PrimaryKey, Column, DataType, BelongsTo } from "sequelize-typescript";
+import { CustomerModel } from "./customer.entity";
 
 @Table({
   tableName: 'correspondence',
-  underscored: true,
+  modelName: 'correspondence',
   timestamps: false,
 })
 export class CorrespondentModel extends Model<CorrespondentModel> {
   @PrimaryKey
   @Column
   correspondentId: string;
+
+  @BelongsTo(() => CustomerModel, {
+    foreignKey: 'customerId',
+    onDelete: 'CASCADE',
+  })
+  customerData: CustomerModel;
 
   @Column
   title: string;

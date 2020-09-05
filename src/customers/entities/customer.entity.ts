@@ -1,9 +1,10 @@
-import { Model, Table, PrimaryKey, Column, DataType } from 'sequelize-typescript';
+import { Model, Table, PrimaryKey, Column, DataType, HasMany } from 'sequelize-typescript';
 import { CustomerStatus } from '../customers.types';
+import { CorrespondentModel } from './correspondent.entity';
 
 @Table({
   tableName: 'customers',
-  underscored: true,
+  modelName: 'customers',
   timestamps: false,
 })
 export class CustomerModel extends Model<CustomerModel> {
@@ -22,6 +23,9 @@ export class CustomerModel extends Model<CustomerModel> {
   
   @Column(DataType.STRING)
   latestStatus: CustomerStatus;
+
+  @HasMany(() => CorrespondentModel, 'customerId')
+  correspondence: CorrespondentModel[];
 
   @Column
   createdTime: Date;

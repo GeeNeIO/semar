@@ -5,7 +5,6 @@ export class CustomersController {
 
   @Get(':userId')
   find() {
-
   }
 
   @Get()
