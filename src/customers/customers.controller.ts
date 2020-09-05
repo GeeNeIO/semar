@@ -28,18 +28,13 @@ export class CustomersController {
 
   }
 
+  @Get(':userId/correspondence')
+  correspondentFindAll() {
+
+  }
+
   @Post(':userId/correspondence')
   correspondentCreate() {
-
-  }
-
-  @Put(':userId/correspondence/:correspondentId')
-  correspondentUpdate() {
-
-  }
-
-  @Delete(':userId/correnpondence/:correspondentId')
-  correspondentDelete() {
 
   }
 }
