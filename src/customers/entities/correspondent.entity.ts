@@ -1,4 +1,4 @@
-import { Model, Table, PrimaryKey, Column } from "sequelize-typescript";
+import { Model, Table, PrimaryKey, Column, DataType } from "sequelize-typescript";
 
 @Table({
   tableName: 'correspondence',
@@ -16,7 +16,7 @@ export class CorrespondentModel extends Model<CorrespondentModel> {
   phoneNumber: string;
   @Column
   address: string;
-  @Column
+  @Column(DataType.TEXT)
   notes: string;
 
   @Column

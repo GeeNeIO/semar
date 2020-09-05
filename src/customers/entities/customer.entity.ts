@@ -1,5 +1,5 @@
 import { Model, Table, PrimaryKey, Column, DataType } from 'sequelize-typescript';
-import { CustomerType, CustomerStatus } from '../customers.types';
+import { CustomerStatus } from '../customers.types';
 
 @Table({
   tableName: 'customers',
@@ -15,9 +15,11 @@ export class CustomerModel extends Model<CustomerModel> {
   customerName: string;
   @Column
   contactPhoneNumber: string;
+  @Column
+  customerIdNumber: string;
+  @Column(DataType.DATEONLY)
+  customerBirthdate: string;
   
-  @Column(DataType.STRING)
-  customerType: CustomerType;
   @Column(DataType.STRING)
   latestStatus: CustomerStatus;
 

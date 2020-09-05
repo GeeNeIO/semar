@@ -3,11 +3,6 @@ export enum CustomerStatus {
   blocked = 'blocked',
 }
 
-export enum CustomerType {
-  agent = 'agent',
-  normal = 'normal',
-}
-
 export type Correspondent = {
   correspondentId: string;
   title?: string;
@@ -21,12 +16,13 @@ export type Correspondent = {
 
 export type Customer = {
   customerId: string;
-  customerName?: string;
-  contactPhoneNumber?: string;
+  customerName: string;
+  contactPhoneNumber: string;
+  customerIdNumber: string;
+  customerBirthdate: string;
 
   correspondence?: Correspondent[];
 
-  customerType?: CustomerType;
   latestStatus?: CustomerStatus;
 
   createdTime?: Date;
