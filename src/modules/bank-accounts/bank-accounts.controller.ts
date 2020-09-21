@@ -26,14 +26,14 @@ export class BankAccountsController {
 
   @Delete(':bankId')
   delete(
-    @Param('bankId') bankId: string;
+    @Param('bankId') bankId: string,
   ): Observable<BankAccount> {
     return of(null);
   }
 
   @Get(':bankId')
   get(
-    @Param('bankId') bankId: string;
+    @Param('bankId') bankId: string,
   ): Observable<BankAccount> {
     return of(null);
   }
