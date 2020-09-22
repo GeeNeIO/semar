@@ -11,9 +11,12 @@ export class BankAccountsService {
     private readonly bankAccountRepository: typeof BankAccountModel,
   ) { }
 
-  createAccount(account: BankAccount & {
-    fkTableName: string,
-    fkTableId: string,
+  createAccount(account: {
+    accountName: string;
+    accountNumber: string;
+    bankName: string;
+    fkTableName: string;
+    fkTableId: string;
   }): Observable<BankAccount> {
     return of(null);
   }

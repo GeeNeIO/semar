@@ -1,10 +1,15 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { Observable, of } from 'rxjs';
+import { BankAccountsService } from './bank-accounts.service';
 import { BankAccountCreateDTO, BankAccountUpdateDTO } from './dto/bank-account.dto';
 import { BankAccount } from './types/bank-account.types';
 
 @Controller('bank-accounts')
 export class BankAccountsController {
+
+  constructor(
+    private bankAccountsService: BankAccountsService,
+  ) { }
 
   @Post(':fkTableName/id/:fkTableId')
   create(
@@ -14,27 +19,32 @@ export class BankAccountsController {
     }, 
     @Body() request: BankAccountCreateDTO,
   ): Observable<BankAccount> {
-    return of(null);
+    return this.bankAccountsService.createAccount({
+      ...params,
+      ...request,
+    });
   }
 
   @Put(':bankId')
   update(
     @Param('bankId') bankId: string, 
     @Body() data: BankAccountUpdateDTO): Observable<BankAccount> {
-    return of(null);
+    return this.bankAccountsService.updateAccount(bankId, {
+      ...data,
+    });
   }
 
   @Delete(':bankId')
   delete(
     @Param('bankId') bankId: string,
   ): Observable<BankAccount> {
-    return of(null);
+    return this.bankAccountsService.deleteAccount(bankId);
   }
 
   @Get(':bankId')
   get(
     @Param('bankId') bankId: string,
   ): Observable<BankAccount> {
-    return of(null);
+    return this.bankAccountsService.getAccount(bankId);
   }
 }
