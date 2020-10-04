@@ -23,17 +23,20 @@ module.exports = {
     fee: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      defaultValue: 200,
     },
     feeDecimalPoint: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaulValue: 3,
+      defaulValue: 2,
     },
     limitPerMonth: {
       type: DataTypes.BIGINT,
       allowNull: false,
       defaultValue: '1000000000',
-    }
+    },
+    createdTime: DataTypes.DATE,
+    lastUpdatedTime: DataTypes.DATE,
   }).then(() => Promise.all([
     qi.addIndex('Edcs', [
       'issuer',
