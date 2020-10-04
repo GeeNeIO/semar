@@ -32,14 +32,14 @@ export class EdcModel extends Model<EdcModel> {
     allowNull: false,
     defaultValue: 200,
   })
-  fee: number;
+  feeOnUs: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
-    defaultValue: 2
+    defaultValue: 200,
   })
-  feeDecimalPoint: number;
+  feeOffUs: number;
 
   @Column({
     type: DataType.BIGINT,

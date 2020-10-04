@@ -20,15 +20,15 @@ module.exports = {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    fee: {
+    feeOnUs: {
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 200,
     },
-    feeDecimalPoint: {
+    feeOffUs: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 2,
+      defaultValue: 200,
     },
     limitPerMonth: {
       type: DataTypes.BIGINT,
