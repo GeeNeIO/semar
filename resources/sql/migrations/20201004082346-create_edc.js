@@ -28,7 +28,7 @@ module.exports = {
     feeDecimalPoint: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaulValue: 2,
+      defaultValue: 2,
     },
     limitPerMonth: {
       type: DataTypes.BIGINT,
