@@ -39,7 +39,16 @@ module.exports = {
         'fkTableName',
         'fkTableId',
       ],
-    })
+    }),
+    qi.addIndex('bankAccounts', [
+      'bankName',
+      'accountNumber'
+    ], {
+      fields: [
+        'bankName',
+        'accountNumber',
+      ]
+    }),
   ])),
 
   down: async (qi, Sequelize) => qi.dropTable('bankAccounts')
