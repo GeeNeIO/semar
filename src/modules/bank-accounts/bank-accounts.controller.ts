@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { BankAccountsService } from './bank-accounts.service';
 import { BankAccountCreateDTO, BankAccountUpdateDTO } from './dto/bank-account.dto';
 import { BankAccount } from './types/bank-account.types';
@@ -23,6 +23,19 @@ export class BankAccountsController {
       ...params,
       ...request,
     });
+  }
+
+  @Get(':fkTableName/id/:fkTableId')
+  list(
+    @Param() params: {
+      fkTableName: string;
+      fkTableId: string;
+    },
+  ): Observable<BankAccount[]> {
+    return this.bankAccountsService.getAccounts(
+      params.fkTableName,
+      params.fkTableId,
+    );
   }
 
   @Put(':bankId')
