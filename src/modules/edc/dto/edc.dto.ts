@@ -10,6 +10,7 @@ export interface GetEdcRequestDto {
 }
 
 export interface GetEdcResponseDto extends GetEdcRequestDto {
+  serialNumber: string;
   merchantName: string;
   issuer: string;
   fee: EdcFee;
@@ -18,6 +19,7 @@ export interface GetEdcResponseDto extends GetEdcRequestDto {
 }
 
 export interface CreateEdcRequestDto {
+  serialNumber: string;
   merchantName: string;
   issuer: string;
   fee: EdcFee;
@@ -42,4 +44,19 @@ export interface UpdateEdcRequestDto extends Partial<CreateEdcRequestDto> {
 }
 
 export interface UpdateEdcResponseDto extends GetEdcResponseDto {
+}
+
+export interface ListEdcRequestDto {
+  merchantName?: string;
+  serialNumber?: string;
+  issuer?: string;
+  ordering?: Array<string>;
+  rows?: number;
+}
+
+export interface ListEdcResponseDto {
+  count: number;
+  prev?: string;
+  next?: string;
+  results: Array<GetEdcResponseDto>;
 }
