@@ -5,6 +5,7 @@ import { flatMap, map, mergeMap } from 'rxjs/operators';
 import { BankAccountModel } from './entities/bank-account.entity';
 import { BankAccount } from './types/bank-account.types';
 import { v4 as uuidv4 } from 'uuid';
+import { Op } from 'sequelize/types';
 
 @Injectable()
 export class BankAccountsService {
@@ -75,24 +76,40 @@ export class BankAccountsService {
     );
   }
 
-  getAccount(bankId: string): Observable<BankAccount> {
-    return from(this.bankAccountRepository.findOne({
-      where: {
-        bankId,
-      }
+  getAccount(
+    bankIds: string | string[]
+  ): Observable<BankAccount | BankAccount[]> {
+    const whereClause = { bankId: {} };
+    if(Array.isArray(bankIds)) {
+      whereClause.bankId[Op.in] = bankIds;
+    } else {
+      whereClause.bankId = bankIds;
+    }
+
+    return from(this.bankAccountRepository.findAll({
+      where: whereClause,
     })).pipe(
-      flatMap((bankAccountModel: BankAccountModel): Observable<BankAccount> => (
-        bankAccountModel === null ?
+      flatMap((
+        bankAccountModel: BankAccountModel[]
+      ): Observable<BankAccount | BankAccount[]> => (
+        bankAccountModel.length === 0 ?
           throwError(new HttpException(
             'bank account not found',
             HttpStatus.NOT_FOUND
           )) :
+        bankAccountModel.length === 1 ?
           of({
-            bankId: bankAccountModel.bankId,
-            accountName: bankAccountModel.accountName,
-            accountNumber: bankAccountModel.accountNumber,
-            bankName: bankAccountModel.bankName,
-          })
+            bankId: bankAccountModel[0].bankId,
+            accountName: bankAccountModel[0].accountName,
+            accountNumber: bankAccountModel[0].accountNumber,
+            bankName: bankAccountModel[0].bankName,
+          }) :
+          of(bankAccountModel.map((model) => ({
+            bankId: model.bankId,
+            accountName: model.accountName,
+            accountNumber: model.accountNumber,
+            bankName: model.bankName,
+          })))
       )),
     );
   }
