@@ -9,6 +9,9 @@ export class EdcModel extends Model<EdcModel> {
   @Column
   edcId: string;
 
+  @Column
+  agentId: string;
+
   @Column({
     type: DataType.STRING,
     allowNull: false,

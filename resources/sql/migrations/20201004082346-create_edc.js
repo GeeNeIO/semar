@@ -8,6 +8,10 @@ module.exports = {
       type: DataTypes.STRING,
       primaryKey: true,
     },
+    agentId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     serialNumber: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -51,6 +55,13 @@ module.exports = {
       ],
       unique: true,
     }),
+    qi.addIndex('Edcs', [
+      'agentId',
+    ], {
+      fields: [
+        'agentId',
+      ],
+    })
   ])),
 
   down: async (qi, { DataTypes }) => qi.dropTable('Edcs'),
