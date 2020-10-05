@@ -35,6 +35,9 @@ module.exports = {
       allowNull: false,
       defaultValue: '1000000000',
     },
+    bankAccountId: {
+      type: DataTypes.STRING,
+    },
     createdTime: DataTypes.DATE,
     lastUpdatedTime: DataTypes.DATE,
   }).then(() => Promise.all([

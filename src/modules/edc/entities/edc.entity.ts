@@ -48,6 +48,9 @@ export class EdcModel extends Model<EdcModel> {
   })
   limitPerMonth: string;
 
+  @Column
+  bankAccountId: string;
+
   @Column(DataType.DATE)
   createdTime: Date;
 
