@@ -51,7 +51,8 @@ export interface ListEdcRequestDto {
   serialNumber?: string;
   issuer?: string;
   ordering?: Array<string>;
-  rows?: number;
+  limit?: number;
+  offset?: number;
 }
 
 export interface ListEdcResponseDto {
