@@ -99,6 +99,20 @@ export class EdcController {
     );
   }
 
+  @Get('agent/:agentId')
+  listFilterByAgent(
+    @Param('agentId') agentId: string,
+  ): Observable<ListEdcResponseDto> {
+    return this.edcService.list({ agentId }).pipe(
+      map((results): ListEdcResponseDto => ({
+        count: results.length,
+        next: '',
+        prev: '',
+        results: results.map((r) => convertEdcToEdcResponseDto(r, 0))
+      }))
+    );
+  }
+
   @Delete(':edcId')
   delete(
     @Param('edcId') edcId: string,

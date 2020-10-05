@@ -53,6 +53,7 @@ export interface ListEdcRequestDto {
   ordering?: Array<string>;
   limit?: number;
   offset?: number;
+  agentId?: string;
 }
 
 export interface ListEdcResponseDto {
