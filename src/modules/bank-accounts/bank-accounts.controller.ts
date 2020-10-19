@@ -58,6 +58,6 @@ export class BankAccountsController {
   get(
     @Param('bankId') bankId: string,
   ): Observable<BankAccount> {
-    return this.bankAccountsService.getAccount(bankId);
+    return this.bankAccountsService.getAccountById(bankId);
   }
 }

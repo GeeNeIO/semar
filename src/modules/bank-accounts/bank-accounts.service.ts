@@ -63,7 +63,7 @@ export class BankAccountsService {
   }
 
   deleteAccount(bankId: string): Observable<BankAccount> {
-    return this.getAccount(bankId).pipe(
+    return this.getAccountById(bankId).pipe(
       flatMap((bankAccount: BankAccount): Observable<BankAccount> => (
         from(this.bankAccountRepository.destroy({
           where: {
@@ -76,40 +76,36 @@ export class BankAccountsService {
     );
   }
 
-  getAccount(
-    bankIds: string | string[]
-  ): Observable<BankAccount | BankAccount[]> {
-    const whereClause = { bankId: {} };
-    if(Array.isArray(bankIds)) {
-      whereClause.bankId[Op.in] = bankIds;
-    } else {
-      whereClause.bankId = bankIds;
-    }
-
+  getAccountByIds(
+    bankIds: string[],
+  ): Observable<BankAccount[]> {
+    const whereClause = { 
+      bankId: {
+        [Op.in]: bankIds,
+      }, 
+    };
     return from(this.bankAccountRepository.findAll({
       where: whereClause,
     })).pipe(
-      flatMap((
-        bankAccountModel: BankAccountModel[]
-      ): Observable<BankAccount | BankAccount[]> => (
-        bankAccountModel.length === 0 ?
-          throwError(new HttpException(
-            'bank account not found',
-            HttpStatus.NOT_FOUND
-          )) :
-        bankAccountModel.length === 1 ?
-          of({
-            bankId: bankAccountModel[0].bankId,
-            accountName: bankAccountModel[0].accountName,
-            accountNumber: bankAccountModel[0].accountNumber,
-            bankName: bankAccountModel[0].bankName,
-          }) :
-          of(bankAccountModel.map((model) => ({
-            bankId: model.bankId,
-            accountName: model.accountName,
-            accountNumber: model.accountNumber,
-            bankName: model.bankName,
-          })))
+      map((bankAccountModels: BankAccountModel[]) => (
+        bankAccountModels.map((b) => ({
+          bankId: b.bankId,
+          accountName: b.accountName,
+          accountNumber: b.accountNumber,
+          bankName: b.bankName,
+        }))
+      )),
+    );
+  }
+
+  getAccountById(
+    bankId: string,
+  ): Observable<BankAccount> {
+    return this.getAccountByIds([bankId]).pipe(
+      map((results) => (
+        results.length === 0 ?
+          null :
+          results[0]
       )),
     );
   }
