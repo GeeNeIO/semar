@@ -11,20 +11,6 @@ export class BankAccountsController {
     private bankAccountsService: BankAccountsService,
   ) { }
 
-  @Post(':fkTableName/id/:fkTableId')
-  create(
-    @Param() params: {
-      fkTableName: string;
-      fkTableId: string;
-    }, 
-    @Body() request: BankAccountCreateDTO,
-  ): Observable<BankAccount> {
-    return this.bankAccountsService.createAccount({
-      ...params,
-      ...request,
-    });
-  }
-
   @Get(':fkTableName/id/:fkTableId')
   list(
     @Param() params: {
