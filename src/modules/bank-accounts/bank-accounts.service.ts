@@ -5,7 +5,7 @@ import { flatMap, map, mergeMap } from 'rxjs/operators';
 import { BankAccountModel } from './entities/bank-account.entity';
 import { BankAccount } from './types/bank-account.types';
 import { v4 as uuidv4 } from 'uuid';
-import { Op } from 'sequelize/types';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class BankAccountsService {
