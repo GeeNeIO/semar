@@ -1,32 +1,28 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { forkJoin, Observable, of } from 'rxjs';
-import { CreateEdcRequestDto, CreateEdcResponseDto, DeleteEdcResponseDto, GetEdcRequestDto, GetEdcResponseDto, ListEdcRequestDto, ListEdcResponseDto, UpdateEdcRequestDto, UpdateEdcResponseDto } from './dto/edc.dto';
 import { EdcService } from './edc.service';
 import { Edc } from './types/edc.types';
 import Big from 'big.js';
 import { map } from 'rxjs/operators';
 import * as qs from 'querystring';
+import { CreateEdcRequest, CreateEdcResponse, DeleteEdcResponse, GetEdcResponse, ListEdcRequest, ListEdcResponse, UpdateEdcRequest, UpdateEdcResponse } from './dto/edc.dto';
 
 function convertEdcToEdcResponseDto(
   edc: Edc,
   balance: number,
-): GetEdcResponseDto {
+): GetEdcResponse {
   return {
-    edcId: edc.edcId,
-    serialNumber: edc.serialNumber,
-    merchantName: edc.merchantName,
-    issuer: edc.issuer,
+    ...edc,
     fee: {
       mdrOnUs: (new Big(edc.fee.mdrOnUs)).div(100).toNumber(),
       mdrOffUs: (new Big(edc.fee.mdrOffUs)).div(100).toNumber(),
     },
-    settlementAccount: edc.settlementAccount,
-    balance: balance,
+    balance,
   };
 }
 
 function createQuery(
-  query: ListEdcRequestDto,
+  query: ListEdcRequest,
   totalRows: number,
   isNext: boolean,
 ): string {
@@ -56,69 +52,55 @@ export class EdcController {
 
   @Post()
   create(
-    @Body() data: CreateEdcRequestDto
-  ): Observable<CreateEdcResponseDto> {
+    @Body() data: CreateEdcRequest
+  ): Observable<CreateEdcResponse> {
     return this.edcService.create(data).pipe(
-      map((edc: Edc): CreateEdcResponseDto => convertEdcToEdcResponseDto(edc, 0)),
+      map((edc) => convertEdcToEdcResponseDto(edc, 0)),
     );
   }
 
   @Put(':edcId')
   update(
     @Param('edcId') edcId: string,
-    @Body() data: UpdateEdcRequestDto,
-  ): Observable<UpdateEdcRequestDto> {
+    @Body() data: UpdateEdcRequest,
+  ): Observable<UpdateEdcResponse> {
     return this.edcService.update(edcId, data).pipe(
-      map((edc: Edc): UpdateEdcResponseDto => convertEdcToEdcResponseDto(edc, 0)),
+      map((edc: Edc) => convertEdcToEdcResponseDto(edc, 0)),
     );
   }
 
   @Get(':edcId')
   get(
     @Param('edcId') edcId: string,
-  ): Observable<GetEdcResponseDto> {
+  ): Observable<GetEdcResponse> {
     return this.edcService.get(edcId).pipe(
-      map((edc: Edc): GetEdcResponseDto => convertEdcToEdcResponseDto(edc, 0)),
+      map((edc: Edc) => convertEdcToEdcResponseDto(edc, 0)),
     );
   }
 
   @Get()
   list(
-    @Query() query: ListEdcRequestDto,
-  ): Observable<ListEdcResponseDto> {
+    @Query() query: ListEdcRequest,
+  ): Observable<ListEdcResponse> {
     return forkJoin(
       this.edcService.totalRows(query),
       this.edcService.list(query),
     ).pipe(
-      map(([totalRows, results]): ListEdcResponseDto => ({
+      map(([totalRows, results]): ListEdcResponse => ({
         count: totalRows,
-        next: createQuery(query, totalRows, true),
-        prev: createQuery(query, totalRows, false),
+        next: `edc/${createQuery(query, totalRows, true)}`,
+        prev: `edc/${createQuery(query, totalRows, false)}`,
         results: results.map((r) => convertEdcToEdcResponseDto(r, 0)),
       })),
-    );
-  }
-
-  @Get('agent/:agentId')
-  listFilterByAgent(
-    @Param('agentId') agentId: string,
-  ): Observable<ListEdcResponseDto> {
-    return this.edcService.list({ agentId }).pipe(
-      map((results): ListEdcResponseDto => ({
-        count: results.length,
-        next: '',
-        prev: '',
-        results: results.map((r) => convertEdcToEdcResponseDto(r, 0))
-      }))
     );
   }
 
   @Delete(':edcId')
   delete(
     @Param('edcId') edcId: string,
-  ): Observable<DeleteEdcResponseDto> {
+  ): Observable<DeleteEdcResponse> {
     return this.edcService.delete(edcId).pipe(
-      map((edc: Edc): DeleteEdcResponseDto => convertEdcToEdcResponseDto(edc, 0)),
+      map((edc: Edc) => convertEdcToEdcResponseDto(edc, 0)),
     )
   }
 }

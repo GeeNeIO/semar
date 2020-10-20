@@ -1,64 +1,66 @@
-import { BankAccount } from "src/modules/bank-accounts/types/bank-account.types";
+import { PartialType } from "@nestjs/mapped-types";
+import { BankAccountData, GetBankAccountResponse } from "../../bank-accounts/dto/bank-account.dto";
 
-type EdcFee = {
-  mdrOnUs: number;
-  mdrOffUs: number;
+export type EdcFee = {
+  readonly mdrOnUs: number;
+  readonly mdrOffUs: number;
 }
 
-export interface GetEdcRequestDto {
-  edcId: string;
+export class EdcData {
+  readonly agentId?: string;
+  readonly serialNumber: string;
+  readonly merchantName: string;
+  readonly issuer: string;
+  readonly fee: EdcFee;
+  readonly settlementAccount: BankAccountData;
+  readonly limitPerMonth: string;
 }
 
-export interface GetEdcResponseDto extends GetEdcRequestDto {
-  serialNumber: string;
-  merchantName: string;
-  issuer: string;
-  fee: EdcFee;
-  settlementAccount: BankAccount;
-  balance: number;
+export class GetEdcRequest {
+  readonly edcId: string;  
 }
 
-export interface CreateEdcRequestDto {
-  serialNumber: string;
-  merchantName: string;
-  issuer: string;
-  fee: EdcFee;
-  settlementAccount: {
-    accountName: string;
-    accountNumber: string;
-    bankName: string;
-  };
+export class GetEdcResponse extends EdcData {
+  readonly edcId: string;
+  readonly balance: number;
+  readonly settlementAccount: GetBankAccountResponse;
+  readonly createdTime: Date;
+  readonly lastUpdatedTime: Date;
 }
 
-export interface CreateEdcResponseDto extends GetEdcResponseDto {
+export class CreateEdcRequest extends EdcData {
 }
 
-export interface DeleteEdcRequestDto {
-  edcId: string;
+export class CreateEdcResponse extends GetEdcResponse {
 }
 
-export interface DeleteEdcResponseDto extends GetEdcResponseDto {
+export class UpdateEdcRequest extends PartialType(EdcData) {
 }
 
-export interface UpdateEdcRequestDto extends Partial<CreateEdcRequestDto> {
+export class UpdateEdcResponse extends GetEdcRequest {
 }
 
-export interface UpdateEdcResponseDto extends GetEdcResponseDto {
+export class DeleteEdcRequest {
+  readonly bankId: string;
 }
 
-export interface ListEdcRequestDto {
+export class DeleteEdcResponse extends GetEdcRequest {
+}
+
+export class ListEdcRequest {
+  agentId?: string;
   merchantName?: string;
   serialNumber?: string;
   issuer?: string;
   ordering?: Array<string>;
-  limit?: number;
   offset?: number;
-  agentId?: string;
+  limit?: number;
 }
 
-export interface ListEdcResponseDto {
+export class ListEdcResponse {
   count: number;
   prev?: string;
   next?: string;
-  results: Array<GetEdcResponseDto>;
+  results: Array<GetEdcResponse>;
 }
+
