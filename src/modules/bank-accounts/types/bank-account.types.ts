@@ -1,6 +1,11 @@
-export type BankAccount = {
-  bankId: string;
+export type BankAccountData = {
+  bankName: string;
   accountName: string;
   accountNumber: string;
-  bankName: string;
+}
+
+export type BankAccount = BankAccountData & {
+  bankId: string;
+  createdTime: Date;
+  updatedTime: Date;
 }

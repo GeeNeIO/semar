@@ -1,9 +1,9 @@
-import { Column, Model, PrimaryKey, Table } from "sequelize-typescript";
+import { Column, CreatedAt, Model, PrimaryKey, Table, UpdatedAt } from "sequelize-typescript";
 
 @Table({
   tableName: 'bankAccounts',
   modelName: 'bankAccount',
-  timestamps: false,
+  timestamps: true,
 })
 export class BankAccountModel extends Model<BankAccountModel> {
   @PrimaryKey
@@ -22,8 +22,8 @@ export class BankAccountModel extends Model<BankAccountModel> {
   @Column
   bankName: string;
 
-  @Column
-  createTime: Date;
-  @Column
+  @CreatedAt
+  createdTime: Date;
+  @UpdatedAt
   updatedTime: Date;
 }

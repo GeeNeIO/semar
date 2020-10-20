@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { from, Observable, of, throwError } from 'rxjs';
-import { flatMap, map, mergeMap } from 'rxjs/operators';
+import { flatMap, map } from 'rxjs/operators';
 import { BankAccountModel } from './entities/bank-account.entity';
-import { BankAccount } from './types/bank-account.types';
+import { BankAccount, BankAccountData } from './types/bank-account.types';
 import { v4 as uuidv4 } from 'uuid';
 import { Op } from 'sequelize';
 
@@ -14,52 +14,51 @@ export class BankAccountsService {
     private readonly bankAccountRepository: typeof BankAccountModel,
   ) { }
 
-  createAccount(account: {
-    accountName: string;
-    accountNumber: string;
-    bankName: string;
-    fkTableName: string;
-    fkTableId: string;
-  }): Observable<BankAccount> {
+  createAccount(
+    fkTableName: string,
+    fkTableId: string,
+    account: BankAccountData,
+  ): Observable<BankAccount> {
     return from(this.bankAccountRepository.create({
       bankId: uuidv4(),
+      fkTableName,
+      fkTableId,
       ...account,
     })).pipe(
-      map((accountModel: BankAccountModel): BankAccount => ({
-        bankId: accountModel.bankId,
-        accountName: accountModel.bankName,
-        accountNumber: accountModel.accountNumber,
-        bankName: accountModel.bankName,
-      })),
+      map((accountRecord: BankAccountModel): BankAccount => ({
+        bankId: accountRecord.bankId,
+        accountName: accountRecord.accountName,
+        accountNumber: accountRecord.accountNumber,
+        bankName: accountRecord.bankName,
+        createdTime: accountRecord.createdTime,
+        updatedTime: accountRecord.updatedTime,
+      }))
     );
   }
 
   updateAccount(
-    bankId: string, 
-    account: Partial<BankAccount>): Observable<BankAccount> {
-    const { bankId: _, ...updatedFields } = account;
+    bankId: string,
+    account: BankAccountData,
+  ): Observable<BankAccount> {
     return from(this.bankAccountRepository.update({
-      ...updatedFields,
+      ...account,
     }, {
       where: {
         bankId,
       },
       returning: true,
     })).pipe(
-      flatMap(([total, data]): Observable<BankAccount> => (
+      flatMap(([total, accountRecord]): Observable<BankAccount> => (
         total === 0 ?
           throwError(new HttpException(
-            'bank account not found', 
-            HttpStatus.NOT_FOUND
+            'bank_account_not_found',
+            HttpStatus.NOT_FOUND,
           )) :
           of({
-            bankId: data[0].bankId,
-            accountName: data[0].accountName,
-            accountNumber: data[0].accountNumber,
-            bankName: data[0].bankName,
+            ...accountRecord[0].get(),
           })
-      )),
-    );
+      ))
+    )
   }
 
   deleteAccount(bankId: string): Observable<BankAccount> {
@@ -70,29 +69,25 @@ export class BankAccountsService {
             bankId,
           }
         })).pipe(
-          map(() => bankAccount)
+          map(() => bankAccount),
         )
-      ))  
+      )),
     );
   }
 
   getAccountByIds(
     bankIds: string[],
   ): Observable<BankAccount[]> {
-    const whereClause = { 
-      bankId: {
-        [Op.in]: bankIds,
-      }, 
-    };
     return from(this.bankAccountRepository.findAll({
-      where: whereClause,
+      where: {
+        bankId: {
+          [Op.in]: bankIds,
+        },
+      },
     })).pipe(
-      map((bankAccountModels: BankAccountModel[]) => (
-        bankAccountModels.map((b) => ({
-          bankId: b.bankId,
-          accountName: b.accountName,
-          accountNumber: b.accountNumber,
-          bankName: b.bankName,
+      map((accountRecords: BankAccountModel[]) => (
+        accountRecords.map((b) => ({
+          ...b,
         }))
       )),
     );
@@ -110,19 +105,19 @@ export class BankAccountsService {
     );
   }
 
-  getAccounts(fkTableName: string, fkTableId: string): Observable<BankAccount[]> {
+  getAccountByReference(
+    fkTableName: string,
+    fkTableId: string
+  ): Observable<BankAccount[]> {
     return from(this.bankAccountRepository.findAll({
       where: {
         fkTableName,
         fkTableId,
       },
     })).pipe(
-      map((bankAccountModels: BankAccountModel[]): BankAccount[] => (
-        bankAccountModels.map((model) => ({
-          bankId: model.bankId,
-          accountName: model.accountNumber,
-          accountNumber: model.accountNumber,
-          bankName: model.bankName,
+      map((accountRecords: BankAccountModel[]): BankAccount[] => (
+        accountRecords.map((record) => ({
+          ...record,
         }))
       )),
     );
