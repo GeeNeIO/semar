@@ -38,7 +38,7 @@ export class BankAccountsService {
 
   updateAccount(
     bankId: string,
-    account: BankAccountData,
+    account: Partial<BankAccountData>,
   ): Observable<BankAccount> {
     return from(this.bankAccountRepository.update({
       ...account,

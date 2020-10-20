@@ -1,7 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { BankAccountsService } from './bank-accounts.service';
-import { BankAccountCreateDTO, BankAccountUpdateDTO } from './dto/bank-account.dto';
+import { GetBankAccountResponse, UpdateBankAccountRequest, UpdateBankAccountResponse } from './dto/bank-account.dto';
 import { BankAccount } from './types/bank-account.types';
 
 @Controller('bank-accounts')
@@ -17,8 +18,8 @@ export class BankAccountsController {
       fkTableName: string;
       fkTableId: string;
     },
-  ): Observable<BankAccount[]> {
-    return this.bankAccountsService.getAccounts(
+  ): Observable<GetBankAccountResponse[]> {
+    return this.bankAccountsService.getAccountByReference(
       params.fkTableName,
       params.fkTableId,
     );
@@ -27,7 +28,8 @@ export class BankAccountsController {
   @Put(':bankId')
   update(
     @Param('bankId') bankId: string, 
-    @Body() data: BankAccountUpdateDTO): Observable<BankAccount> {
+    @Body() data: UpdateBankAccountRequest
+  ): Observable<UpdateBankAccountResponse> {
     return this.bankAccountsService.updateAccount(bankId, {
       ...data,
     });
