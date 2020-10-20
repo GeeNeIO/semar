@@ -61,6 +61,26 @@ export class BankAccountsService {
     )
   }
 
+  updateAccountByReference(
+    fkTableName: string,
+    fkTableId: string,
+    account: Partial<BankAccountData>,
+  ): Observable<BankAccount> {
+    return from(this.bankAccountRepository.update({
+      ...account,
+    }, {
+      where: {
+        fkTableName,
+        fkTableId,
+      },
+      returning: true,
+    })).pipe(
+      map(([total, accountRecord]): BankAccount => ({
+        ...accountRecord[0].get(),
+      })),
+    );
+  }
+
   deleteAccount(bankId: string): Observable<BankAccount> {
     return this.getAccountById(bankId).pipe(
       flatMap((bankAccount: BankAccount): Observable<BankAccount> => (
