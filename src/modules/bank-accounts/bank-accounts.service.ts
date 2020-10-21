@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { from, Observable, of, throwError } from 'rxjs';
-import { flatMap, map } from 'rxjs/operators';
+import { flatMap, map, throwIfEmpty } from 'rxjs/operators';
 import { BankAccountModel } from './entities/bank-account.entity';
 import { BankAccount, BankAccountData } from './types/bank-account.types';
 import { v4 as uuidv4 } from 'uuid';
@@ -92,6 +92,27 @@ export class BankAccountsService {
           map(() => bankAccount),
         )
       )),
+    );
+  }
+
+  deleteAccountByReference(
+    fkTableName: string,
+    fkTableId: string,
+  ): Observable<BankAccount[]> {
+    return this.getAccountByReference(fkTableName, fkTableId).pipe(
+      flatMap((accounts: BankAccount[]) => {
+        const accountIds = accounts.map((account) => account.bankId);
+
+        return from(this.bankAccountRepository.destroy({
+          where: {
+            bankId: {
+              [Op.in]: accountIds,
+            },
+          },
+        })).pipe(
+          map(() => accounts),
+        );
+      })
     );
   }
 
