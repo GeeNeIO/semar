@@ -10,5 +10,6 @@ import { BankAccountModel } from './entities/bank-account.entity';
     ]),
   ],
   providers: [BankAccountsService],
+  exports: [BankAccountsService],
 })
 export class BankAccountsModule {}

@@ -1,8 +1,7 @@
 import { Column, CreatedAt, Model, PrimaryKey, Table, UpdatedAt } from "sequelize-typescript";
 
 @Table({
-  tableName: 'bankAccounts',
-  modelName: 'bankAccount',
+  tableName: 'BankAccounts',
   timestamps: true,
 })
 export class BankAccountModel extends Model<BankAccountModel> {

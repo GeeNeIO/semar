@@ -55,7 +55,12 @@ export class BankAccountsService {
             HttpStatus.NOT_FOUND,
           )) :
           of({
-            ...accountRecord[0].get(),
+            bankId: accountRecord[0].bankId,
+            accountName: accountRecord[0].accountName,
+            accountNumber: accountRecord[0].accountNumber,
+            bankName: accountRecord[0].bankName,
+            createdTime: accountRecord[0].createdTime,
+            updatedTime: accountRecord[0].updatedTime,
           })
       ))
     )
@@ -76,7 +81,12 @@ export class BankAccountsService {
       returning: true,
     })).pipe(
       map(([total, accountRecord]): BankAccount => ({
-        ...accountRecord[0].get(),
+        bankId: accountRecord[0].bankId,
+        accountName: accountRecord[0].accountName,
+        accountNumber: accountRecord[0].accountNumber,
+        bankName: accountRecord[0].bankName,
+        createdTime: accountRecord[0].createdTime,
+        updatedTime: accountRecord[0].updatedTime,
       })),
     );
   }
@@ -128,8 +138,13 @@ export class BankAccountsService {
     })).pipe(
       map((accountRecords: BankAccountModel[]) => (
         accountRecords.map((b) => ({
-          ...b,
-        }))
+          bankId: b.bankId,
+          accountName: b.accountName,
+          accountNumber: b.accountNumber,
+          bankName: b.bankName,
+          createdTime: b.createdTime,
+          updatedTime: b.updatedTime,
+      } as BankAccount))
       )),
     );
   }
@@ -158,7 +173,12 @@ export class BankAccountsService {
     })).pipe(
       map((accountRecords: BankAccountModel[]): BankAccount[] => (
         accountRecords.map((record) => ({
-          ...record,
+          bankId: record.bankId,
+          accountName: record.accountName,
+          accountNumber: record.accountNumber,
+          bankName: record.bankName,
+          createdTime: record.createdTime,
+          updatedTime: record.updatedTime,
         }))
       )),
     );
