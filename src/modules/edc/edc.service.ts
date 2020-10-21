@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { forkJoin, from, Observable, of } from "rxjs";
-import { flatMap, map, tap } from "rxjs/operators";
+import { catchError, flatMap, map, tap } from "rxjs/operators";
 import { BankAccountsService } from "../bank-accounts/bank-accounts.service";
 import { EdcModel } from "./entities/edc.entity";
 import { Edc, EdcData } from "./types/edc.types";
@@ -25,41 +25,92 @@ export class EdcService {
     edcId: string, 
     edcData: Omit<EdcData, 'settlementAccount'>,
   ): Observable<Edc> {
-    return of(null);
+    return from(this.edcRepository.create({
+      edcId,
+      ...edcData,
+    })).pipe(
+      map((record: EdcModel): Edc => ({
+        edcId: record.edcId,
+        merchantName: record.merchantName,
+        serialNumber: record.serialNumber,
+        issuer: record.issuer,
+        agentId: record.agentId,
+        fee: {
+          mdrOffUs: record.feeOffUs,
+          mdrOnUs: record.feeOnUs,
+        },
+        limitPerMonth: record.limitPerMonth,
+        settlementAccount: null,
+        createdTime: record.createdTime,
+        lastUpdatedTime: record.lastUpdatedTime,
+      })),
+    );
   }
 
   private createAccount(
     edcId: string, 
     accountData: BankAccountData,
   ): Observable<BankAccount> {
-    return of(null);
+    return this.bankAccountsService.createAccount(
+      REF_TABLE,
+      edcId,
+      accountData,
+    );
   }
 
   private setAccount(
     edcId: string,
     settlementAccountBankId: string,
   ): Observable<EdcModel> {
-    return of(null);
+    return from(this.edcRepository.update({
+      bankAccountId: settlementAccountBankId,
+    }, {
+      where: {
+        edcId,
+      },
+      returning: true,
+    })).pipe(
+      map(([total, record]) => record[0].get()),
+    );
   }
 
   private updateEdcData(
     edcId: string,
-    edcData: Partial<EdcData>,
+    edcData: Partial<Omit<EdcData, 'settlementAccount'>>,
   ): Observable<EdcModel> {
-    return of(null);
+    return from(this.edcRepository.update({
+      agentId: edcData
+    }, {
+      where: {
+        edcId,
+      },
+      returning: true
+    })).pipe(
+      map(([total, record]) => record[0].get()),
+    );
   }
 
   private updateEdcAccountData(
     edcId: string,
     accountData: BankAccountData,
-  ): Observable<BankAccountModel> {
-    return of(null);
+  ): Observable<BankAccount> {
+    return this.bankAccountsService.updateAccountByReference(
+      REF_TABLE,
+      edcId,
+      accountData,
+    );
   }
 
   private deleteEdcDataAndAccount(
     edcId: string,
   ): Observable<boolean> {
-    return of(false);
+    return this.bankAccountsService.deleteAccountByReference(
+      REF_TABLE,
+      edcId,
+    ).pipe(
+      map(() => true),
+      catchError(() => of(false)),
+    );
   }
 
   create(edcData: EdcData): Observable<Edc> {

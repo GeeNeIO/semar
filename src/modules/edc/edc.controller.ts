@@ -6,6 +6,7 @@ import Big from 'big.js';
 import { map } from 'rxjs/operators';
 import * as qs from 'querystring';
 import { CreateEdcRequest, CreateEdcResponse, DeleteEdcResponse, GetEdcResponse, ListEdcRequest, ListEdcResponse, UpdateEdcRequest, UpdateEdcResponse } from './dto/edc.dto';
+import { EdcDataRequestValidator } from './pipes/request.pipe';
 
 function convertEdcToEdcResponseDto(
   edc: Edc,
@@ -52,7 +53,7 @@ export class EdcController {
 
   @Post()
   create(
-    @Body() data: CreateEdcRequest
+    @Body(new EdcDataRequestValidator()) data: CreateEdcRequest
   ): Observable<CreateEdcResponse> {
     return this.edcService.create(data).pipe(
       map((edc) => convertEdcToEdcResponseDto(edc, 0)),
@@ -62,7 +63,7 @@ export class EdcController {
   @Put(':edcId')
   update(
     @Param('edcId') edcId: string,
-    @Body() data: UpdateEdcRequest,
+    @Body(new EdcDataRequestValidator()) data: UpdateEdcRequest,
   ): Observable<UpdateEdcResponse> {
     return this.edcService.update(edcId, data).pipe(
       map((edc: Edc) => convertEdcToEdcResponseDto(edc, 0)),
