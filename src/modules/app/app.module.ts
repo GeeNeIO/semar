@@ -1,13 +1,23 @@
 import { Module } from '@nestjs/common';
 import { EdcModule } from '../edc/edc.module';
-import { EdcController } from '../edc/edc.controller';
+import { SequelizeModule } from '@nestjs/sequelize';
+import * as Fs from 'fs';
+import * as Promise from 'bluebird';
+
+const fsRead = Promise.promisify(Fs.readFile).bind(Fs);
 
 @Module({
   imports: [
+    SequelizeModule.forRootAsync({
+      useFactory: async () => {
+        const dbConfigString = (await fsRead('config/sql.json')).toString();
+        console.log(dbConfigString);
+        const dbConfig = JSON.parse(dbConfigString);
+
+        return dbConfig[process.env.NODE_ENV || 'development'];
+      },
+    }),
     EdcModule,
-  ],
-  controllers: [
-    EdcController,
   ],
 })
 export class AppModule {}
