@@ -3,7 +3,7 @@
 const Promise = require('bluebird');
 
 module.exports = {
-  up: async (qi, { DataTypes }) => qi.createTable('bankAccounts', {
+  up: async (qi, { DataTypes }) => qi.createTable('BankAccounts', {
     bankId: {
       type: DataTypes.STRING,
       primaryKey: true,
@@ -31,7 +31,7 @@ module.exports = {
     createdTime: DataTypes.DATE,
     updatedTime: DataTypes.DATE,
   }).then(() => Promise.all([
-    qi.addIndex('bankAccounts', [
+    qi.addIndex('BankAccounts', [
       'fkTableName',
       'fkTableId',
     ], {
@@ -40,7 +40,7 @@ module.exports = {
         'fkTableId',
       ],
     }),
-    qi.addIndex('bankAccounts', [
+    qi.addIndex('BankAccounts', [
       'bankName',
       'accountNumber'
     ], {
@@ -51,5 +51,5 @@ module.exports = {
     }),
   ])),
 
-  down: async (qi, Sequelize) => qi.dropTable('bankAccounts')
+  down: async (qi, Sequelize) => qi.dropTable('BankAccounts')
 };
