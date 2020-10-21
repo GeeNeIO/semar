@@ -1,8 +1,8 @@
-import { Column, DataType, Model, PrimaryKey, Table } from "sequelize-typescript";
+import { Column, CreatedAt, DataType, Model, PrimaryKey, Table, UpdatedAt } from "sequelize-typescript";
 
 @Table({
   tableName: 'Edcs',
-  timestamps: false,
+  timestamps: true,
 })
 export class EdcModel extends Model<EdcModel> {
   @PrimaryKey
@@ -54,9 +54,9 @@ export class EdcModel extends Model<EdcModel> {
   @Column
   bankAccountId: string;
 
-  @Column(DataType.DATE)
+  @CreatedAt
   createdTime: Date;
 
-  @Column(DataType.DATE)
+  @UpdatedAt
   lastUpdatedTime: Date;
 }

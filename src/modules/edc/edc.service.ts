@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
-import { forkJoin, from, Observable, of } from "rxjs";
+import { forkJoin, from, Observable, of, throwError } from "rxjs";
 import { catchError, flatMap, map, tap } from "rxjs/operators";
 import { BankAccountsService } from "../bank-accounts/bank-accounts.service";
 import { EdcModel } from "./entities/edc.entity";
@@ -8,8 +8,8 @@ import { Edc, EdcData } from "./types/edc.types";
 import { v4 as uuidv4 } from 'uuid';
 import { BankAccount, BankAccountData } from "../bank-accounts/types/bank-account.types";
 import { ListEdcRequest } from "./dto/edc.dto";
-import { BankAccountModel } from "../bank-accounts/entities/bank-account.entity";
 import { FindOptions, Op } from "sequelize";
+import * as R from 'ramda';
 
 const REF_TABLE = `edc`;
 
@@ -27,7 +27,13 @@ export class EdcService {
   ): Observable<Edc> {
     return from(this.edcRepository.create({
       edcId,
-      ...edcData,
+      agentId: edcData.agentId,
+      serialNumber: edcData.serialNumber,
+      merchantName: edcData.merchantName,
+      issuer: edcData.issuer,
+      feeOnUs: edcData.fee.mdrOnUs,
+      feeOffUs: edcData.fee.mdrOffUs,
+      limitPerMonth: edcData.limitPerMonth,
     })).pipe(
       map((record: EdcModel): Edc => ({
         edcId: record.edcId,
@@ -78,9 +84,16 @@ export class EdcService {
     edcId: string,
     edcData: Partial<Omit<EdcData, 'settlementAccount'>>,
   ): Observable<EdcModel> {
-    return from(this.edcRepository.update({
-      agentId: edcData
-    }, {
+    return from(this.edcRepository.update(R.pickBy(
+      (val) => val !== undefined, {
+        agentId: edcData.agentId,
+        serialNumber: edcData.serialNumber,
+        merchantName: edcData.merchantName,
+        issuer: edcData.issuer,
+        feeOnUs: edcData.fee?.mdrOnUs,
+        feeOffUs: edcData.fee?.mdrOffUs,
+        limitPerMonth: edcData.limitPerMonth,
+    }), {
       where: {
         edcId,
       },
@@ -104,9 +117,19 @@ export class EdcService {
   private deleteEdcDataAndAccount(
     edcId: string,
   ): Observable<boolean> {
-    return this.bankAccountsService.deleteAccountByReference(
+    const accountDeletion$ = this.bankAccountsService.deleteAccountByReference(
       REF_TABLE,
       edcId,
+    )
+    const edcDeletion$ = from(this.edcRepository.destroy({
+      where: {
+        edcId,
+      }
+    }));
+
+    return forkJoin(
+      edcDeletion$,
+      accountDeletion$,
     ).pipe(
       map(() => true),
       catchError(() => of(false)),
@@ -145,6 +168,11 @@ export class EdcService {
 
   delete(edcId: string): Observable<Edc> {
     return this.get(edcId).pipe(
+      tap((edc) => {
+        if(edc === null) {
+          throw new NotFoundException('edc_not_found');
+        }
+      }),
       tap(() => this.deleteEdcDataAndAccount(edcId)),
     );
   }
@@ -166,6 +194,11 @@ export class EdcService {
       edcRecord$,
       accountData$,
     ).pipe(
+      tap(([edcRecord, _]) => {
+        if(edcRecord === null) {
+          throw new NotFoundException('edc_not_found');
+        }
+      }),
       map(([edcRecord, accountData]): Edc => ({
         edcId,
         agentId: edcRecord.agentId,
@@ -218,30 +251,42 @@ export class EdcService {
 
   createListQuery(query: ListEdcRequest): FindOptions {
     const options: FindOptions = {};
-    options.where = {};
-    
-    ['agentId', 'merchantName', 'serialNumber', 'issuer'].forEach((qname) => {
-      if(query[qname] && query[qname]?.length > 0) {
+    const where =  [
+      'agentId', 
+      'merchantName', 
+      'serialNumber', 
+      'issuer'
+    ].reduce((w, qname) => {
+      if(query[qname] !== undefined) {
         if(query[qname].charAt(0) === '-') {
-          options.where[qname] = {
-            [Op.ne]: query[qname],
+          w[qname] = {
+            [Op.ne]: query[qname].substr(1),
           };
         } else {
-          options.where[qname] = query[qname];
+          w[qname] = query[qname];
         }
       }
-    })
+      return w;
+    }, {});
 
-    if(Object.keys(options.where).length === 0) {
-      delete options.where;
+    if(Object.keys(where).length > 0) {
+      options.where = where;
     }
 
     const order = query?.ordering?.reduce((order, orderInput) => {
-      const isAsc = orderInput.charAt(0) !== '-';
-      const field = isAsc ? order : orderInput.substr(1);
-
-      order.push([field, isAsc ? 'ASC' : 'DESC']);
-
+      if([
+        'agentId', 
+        'merchantName', 
+        'serialNumber', 
+        'issuer',
+      ].filter((valid) => 
+          valid === orderInput || `-${valid}` === orderInput
+        ).length > 0) {
+        const isAsc = orderInput.charAt(0) !== '-';
+        const field = isAsc ? orderInput : orderInput.substr(1);
+  
+        order.push([field, isAsc ? 'ASC' : 'DESC']);
+      }
       return order;
     }, []);
 

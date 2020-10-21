@@ -6,7 +6,8 @@ import Big from 'big.js';
 import { map } from 'rxjs/operators';
 import * as qs from 'querystring';
 import { CreateEdcRequest, CreateEdcResponse, DeleteEdcResponse, GetEdcResponse, ListEdcRequest, ListEdcResponse, UpdateEdcRequest, UpdateEdcResponse } from './dto/edc.dto';
-import { EdcDataRequestValidator } from './pipes/request.pipe';
+import { EdcDataRequestValidator, ListEdcRequestValidator } from './pipes/request.pipe';
+import * as R from 'ramda';
 
 function convertEdcToEdcResponseDto(
   edc: Edc,
@@ -23,6 +24,7 @@ function convertEdcToEdcResponseDto(
 }
 
 function createQuery(
+  prefix: string,
   query: ListEdcRequest,
   totalRows: number,
   isNext: boolean,
@@ -35,14 +37,28 @@ function createQuery(
     return '';
   }
 
-  return qs.encode({
+  console.log(`createQuery: `, {
     offset: nextOffset,
     limit: limit,
     merchantName: query.merchantName || '',
     serialNumber: query.serialNumber || '',
     issuer: query.issuer || '',
-    ordering: query.ordering || []
+    ordering: query.ordering || [],
   });
+  const q = qs.encode(R.pickBy((val) => (
+    (Array.isArray(val) && val.length > 0) 
+    || (isNaN(val) && val !== undefined)
+    || val !== undefined
+  ), {
+    offset: nextOffset,
+    limit: limit,
+    merchantName: query.merchantName,
+    serialNumber: query.serialNumber,
+    issuer: query.issuer,
+    ordering: query.ordering || [],
+  }));
+
+  return q.length > 0 ? prefix + '?' + q : '';
 }
 
 @Controller('edc')
@@ -81,7 +97,7 @@ export class EdcController {
 
   @Get()
   list(
-    @Query() query: ListEdcRequest,
+    @Query(new ListEdcRequestValidator()) query: ListEdcRequest,
   ): Observable<ListEdcResponse> {
     return forkJoin(
       this.edcService.totalRows(query),
@@ -89,8 +105,8 @@ export class EdcController {
     ).pipe(
       map(([totalRows, results]): ListEdcResponse => ({
         count: totalRows,
-        next: `edc/${createQuery(query, totalRows, true)}`,
-        prev: `edc/${createQuery(query, totalRows, false)}`,
+        next: `${createQuery('edc', query, totalRows, true)}`,
+        prev: `${createQuery('edc', query, totalRows, false)}`,
         results: results.map((r) => convertEdcToEdcResponseDto(r, 0)),
       })),
     );

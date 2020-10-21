@@ -6,6 +6,7 @@ export type FeeData = {
 };
 
 export type EdcData = {
+  agentId?: string;
   serialNumber: string;
   merchantName: string;
   issuer: string;
@@ -16,7 +17,6 @@ export type EdcData = {
 
 export type Edc = EdcData & {
   edcId: string;
-  agentId?: string;
   settlementAccount: BankAccount;
   createdTime: Date;
   lastUpdatedTime: Date;
