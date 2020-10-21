@@ -3,6 +3,7 @@ import { EdcModule } from '../edc/edc.module';
 import { SequelizeModule } from '@nestjs/sequelize';
 import * as Fs from 'fs';
 import * as Promise from 'bluebird';
+import { HealthModule } from '../health/health.module';
 
 const fsRead = Promise.promisify(Fs.readFile).bind(Fs);
 
@@ -21,6 +22,7 @@ const fsRead = Promise.promisify(Fs.readFile).bind(Fs);
       },
     }),
     EdcModule,
+    HealthModule,
   ],
 })
 export class AppModule {}
