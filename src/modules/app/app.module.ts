@@ -14,7 +14,10 @@ const fsRead = Promise.promisify(Fs.readFile).bind(Fs);
         console.log(dbConfigString);
         const dbConfig = JSON.parse(dbConfigString);
 
-        return dbConfig[process.env.NODE_ENV || 'development'];
+        return {
+          autoLoadModels: true,
+          ...dbConfig[process.env.NODE_ENV || 'development'],
+        }
       },
     }),
     EdcModule,
